@@ -4,7 +4,7 @@ This repository contains code relevant to our manuscript (Wilkins et al) on TDP-
 
 # R Markdown
 
-An R Markdown file is provided which contains the code used to make almost every figure in the Paper.
+An R Markdown file is provided which contains the code used to make almost every figure in the Paper. Wherever feasible, this markdown contains the full code required to go from the output of processing pipelines to publication-ready figures, to help reproducibility and transparency.
 
 # Scripts
 
