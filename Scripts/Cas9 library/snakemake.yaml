@@ -1,0 +1,46 @@
+#### conda activate spliceai_snakemake
+#### sbatch -N 1 -J snake --mem=8GB -t 24:00:00 --wrap="snakemake -s snakemake.yaml -k --cluster 'sbatch {params.cluster}' --jobs 200"
+
+samples = ["C9D", "C9N"]
+
+fastq_dir = "/camp/lab/ulej/home/users/wilkino/cryptic_directed_evo/ngs_data/cas9_first_round/00_fastq/"
+
+rule all:
+  input:
+    expand("output/csv/{sample}.csv.gz", sample = samples),
+    "output/spliceai/spliceai_results.csv"
+
+
+rule custom:
+  input:
+    r1 = fastq_dir + "{sample}_R1_001.fastq.gz",
+    r2 = fastq_dir + "{sample}_R2_001.fastq.gz"
+  output:
+    csv = "output/csv/{sample}.csv.gz",
+    consensus_csv = "output/csv/{sample}_consensus.csv"
+
+  threads: 8
+
+  params:
+    cluster = "-J custom --mem=8G -t 8:00:00 --cpus-per-task=8 -o output/slurm/custom_{sample}.txt",
+    csv = "output/csv/{sample}.csv"
+
+  shell: 
+    """
+    python3 extract_umis_and_seqs.py --r1 {input.r1} --r2 {input.r2} -s {params.csv} --consensus_csv {output.consensus_csv}
+    gzip {params.csv}
+    """
+
+rule spliceai:
+  input:
+    r1 = "output/csv/" + samples[0] + "_consensus.csv",
+    r2 = "output/csv/" + samples[1] + "_consensus.csv"
+  output:
+    csv = "output/spliceai/spliceai_results.csv"
+  threads: 8
+  params:
+    cluster = "-J spliceai --mem=16G -t 16:00:00 --cpus-per-task=8 -o output/slurm/splice.txt"
+  shell:
+    """
+    python3 splice_ai_of_cas.py --nt {input.r1} --dox {input.r2} --output {output.csv}
+    """
