@@ -8,7 +8,7 @@ An R Markdown file is provided which contains the code used to make almost every
 
 # Scripts
 
-This folder contains scripts necessary for the processing of raw sequencing data. The outputs of these scripts are subsequently analysed and plotted using R.
+This folder contains scripts and pipelilnes necessary for the processing of raw sequencing data. The outputs of these pipelines are subsequently analysed and plotted using R.
 
 Pipelines are written in Snakemake. Individual software packages are either common published software packages (e.g. Minimap2), or are custom software packages which have been released on Github (e.g. QIAxcelR). In a couple of cases, custom scripts are included in the scripts folder itself.
 
