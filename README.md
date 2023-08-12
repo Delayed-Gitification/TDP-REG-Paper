@@ -1,6 +1,6 @@
 # TDP-REG-Paper
 
-This repository contains code relevant to our manuscript (Wilkins et al) on TDP-REG.
+This repository contains code and small data files relevant to our manuscript (Wilkins et al) on TDP-REG.
 
 # R Markdown
 
@@ -19,4 +19,10 @@ This folder contains two custom scripts and a Snakemake pipeline for analysing t
 ## Nanopore
 
 This folder contains Snakemake pipelines (and accompanying config files, plus one custom pysam script) for analysing all the Nanopore targeted sequencing data used in this study.
+
+# Plasmids
+
+Our manuscript features a large number of plasmids. All of the bespoke plasmid sequences used in the manuscript are availible in this folder (plasmids which are from Addgene etc. are not included in this folder but are referenced within the manuscript)
+
+
 
