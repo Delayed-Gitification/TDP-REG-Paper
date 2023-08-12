@@ -1,0 +1,86 @@
+import sys
+import os
+import re
+
+# First thing is generate all folders that aren't already present
+output_folder = "output_from_snakemake"
+
+this_filename = "/camp/home/wilkino/home/nanopore/REPRODUCIBLE_ANALYSIS_FOR_CRYPTIC_GATING_PAPER/scripts/growthcomp_dream3/snakemake.yaml"
+
+directories = set()
+
+def find_all_slash_positions(input_string):
+    positions = []
+    pos = input_string.find("/")
+    
+    while pos != -1:
+        positions.append(pos)
+        pos = input_string.find("/", pos + 1)
+    
+    return positions
+
+with open(this_filename, 'r') as file:
+  for line in file:
+    line2 = line.rstrip()
+
+    if output_folder not in line2:
+      continue
+
+    pos = line2.find(output_folder)
+    line2 = line2[pos:]
+    if "/" not in line2:
+      continue
+
+    last_slash = find_all_slash_positions(line2)[-1]
+
+    line2 = line2[0:last_slash+1]
+    
+    directories.add(line2)
+      
+print(directories)
+
+directories.add(output_folder + "/")
+
+for new_directory in list(directories):
+  if not os.path.exists(new_directory):
+      os.makedirs(new_directory)
+      print(f"Directory '{new_directory}' created successfully.")
+  else:
+      print(f"Directory '{new_directory}' already exists.")
+
+
+
+
+
+### RUN FROM Z:\home\users\wilkino\nanopore\REPRODUCIBLE_ANALYSIS_FOR_CRYPTIC_GATING_PAPER\output\gluc\ ###
+#### conda activate nanopore_snakemake
+#### sbatch -N 1 -J snake --mem=8GB -t 24:00:00 --wrap="snakemake -s ~/home/nanopore/REPRODUCIBLE_ANALYSIS_FOR_CRYPTIC_GATING_PAPER/scripts/growthcomp_dream3/snakemake.yaml -k --cluster 'sbatch {params.cluster}' --jobs 200 --configfile ~/home/nanopore/REPRODUCIBLE_ANALYSIS_FOR_CRYPTIC_GATING_PAPER/scripts/growthcomp_dream3/config.yaml"
+
+
+all_combinations = [str(a + 1) for a in range(9)]
+
+
+# Now run the actual snakemake
+
+rule all:
+  input:
+    expand("output_from_snakemake/aligned/barcodes_{combination}.bam", combination = all_combinations)
+
+
+
+rule align:
+  input:
+    fastq = "/camp/home/wilkino/home/nanopore/REPRODUCIBLE_ANALYSIS_FOR_CRYPTIC_GATING_PAPER/data/growthcomp_dream3/fastq/barcode0{combination}.fastq.gz"
+  output:
+    bam = "output_from_snakemake/aligned/barcodes_{combination}.bam"
+  threads: 8
+  params:
+    cluster = "-J minimap --mem=32G -t 8:00:00 -o output_from_snakemake/slurm/align_{combination}.txt",
+    fasta = config["fasta"]
+  shell:
+    """
+    minimap2 -ax splice {params.fasta} {input.fastq} | samtools sort -o {output.bam}
+    samtools index {output.bam}
+    """
+
+

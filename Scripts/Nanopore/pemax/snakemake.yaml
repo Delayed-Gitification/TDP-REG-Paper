@@ -1,0 +1,148 @@
+import sys
+import os
+import re
+
+# First thing is generate all folders that aren't already present
+output_folder = "output_from_snakemake"
+
+this_filename = "/camp/home/wilkino/home/nanopore/REPRODUCIBLE_ANALYSIS_FOR_CRYPTIC_GATING_PAPER/scripts/pemax/snakemake.yaml"
+
+directories = set()
+
+def find_all_slash_positions(input_string):
+    positions = []
+    pos = input_string.find("/")
+    
+    while pos != -1:
+        positions.append(pos)
+        pos = input_string.find("/", pos + 1)
+    
+    return positions
+
+with open(this_filename, 'r') as file:
+  for line in file:
+    line2 = line.rstrip()
+
+    if output_folder not in line2:
+      continue
+
+    pos = line2.find(output_folder)
+    line2 = line2[pos:]
+    if "/" not in line2:
+      continue
+
+    last_slash = find_all_slash_positions(line2)[-1]
+
+    line2 = line2[0:last_slash+1]
+    
+    directories.add(line2)
+      
+print(directories)
+
+directories.add(output_folder + "/")
+
+for new_directory in list(directories):
+  if not os.path.exists(new_directory):
+      os.makedirs(new_directory)
+      print(f"Directory '{new_directory}' created successfully.")
+  else:
+      print(f"Directory '{new_directory}' already exists.")
+
+
+
+
+
+### RUN FROM Z:\home\users\wilkino\nanopore\REPRODUCIBLE_ANALYSIS_FOR_CRYPTIC_GATING_PAPER\output\pemax\ ###
+#### conda activate nanopore_snakemake
+#### sbatch -N 1 -J snake --mem=8GB -t 24:00:00 --wrap="snakemake -s ~/home/nanopore/REPRODUCIBLE_ANALYSIS_FOR_CRYPTIC_GATING_PAPER/scripts/pemax/snakemake.yaml -k --cluster 'sbatch {params.cluster}' --jobs 200 --configfile ~/home/nanopore/REPRODUCIBLE_ANALYSIS_FOR_CRYPTIC_GATING_PAPER/scripts/pemax/config.yaml"
+
+# First, use the barcode.csv to get a list of all the barcode combinations we will have
+
+barcode_csv = config["barcode_csv"]
+
+forward_barcodes = ["no_match"] # include -1 as this is what sequences that can't be matched to a barcode are assigned
+reverse_barcodes = ["no_match"] # see above
+
+with open(barcode_csv) as file:
+  for line in file:
+      line2 = line.rstrip().split(",")
+
+      this_name = line2[0]
+      this_bc = line2[1].upper()
+      f_or_r = line2[2].upper()
+
+      if f_or_r == "F":
+        forward_barcodes.append(this_name)
+      else:
+        reverse_barcodes.append(this_name)
+
+all_combinations = []
+
+for f in forward_barcodes:
+  for r in reverse_barcodes:
+    all_combinations.append(str(f) + "_" + str(r))
+
+
+# Now run the actual snakemake
+
+rule all:
+  input:
+    expand("output_from_snakemake/pileup/barcodes_{combination}.csv.gz", combination = all_combinations)
+
+rule demultiplex:
+  input:
+    barcode_csv = config["barcode_csv"],
+    fastq = config["fastq"]
+  output:
+    out = expand("output_from_snakemake/demultiplexed/barcodes_{combination}.fastq.gz", combination = all_combinations)  # using expand means it only runs once, for some reason
+  threads: 8
+  params:
+    cluster = "-J demultiplex --mem=32G -t 8:00:00 -o output_from_snakemake/slurm/demulti.txt",
+    dummy_out = "output_from_snakemake/demultiplexed/barcodes"
+  shell:
+    """
+    python3 ~/home/software/nano_tools/demultiplex_nanopore_barcodes.py -p {input.barcode_csv} -o {params.dummy_out} -f {input.fastq} --max_ambiguity 80 -s 95 -l 100
+    """
+
+rule align:
+  input:
+    fastq = "output_from_snakemake/demultiplexed/barcodes_{combination}.fastq.gz"
+  output:
+    bam = "output_from_snakemake/aligned/barcodes_{combination}.bam"
+  threads: 8
+  params:
+    cluster = "-J minimap --mem=32G -t 8:00:00 -o output_from_snakemake/slurm/align_{combination}.txt",
+    sam = "output_from_snakemake/demultiplexed/barcodes",
+    fasta = config["fasta"]
+  shell:
+    """
+    minimap2 -ax splice {params.fasta} {input.fastq} | samtools sort -o {output.bam}
+    samtools index {output.bam}
+    """
+
+rule select_risk:
+  input:
+    bam = "output_from_snakemake/aligned/barcodes_{combination}.bam"
+  output:
+    bam = "output_from_snakemake/aligned_just_risk/barcodes_{combination}.bam"
+  threads: 8
+  params:
+    cluster =  "-J risk --mem=8G -t 8:00:00 -o output_from_snakemake/slurm/filter_for_risk_{combination}.txt"
+  shell:
+    """
+    python3 ~/home/nanopore/REPRODUCIBLE_ANALYSIS_FOR_CRYPTIC_GATING_PAPER/scripts/pemax/filter_bam_for_risk.py {input.bam} {output.bam}
+    """
+
+
+rule pileup:
+  input:
+    bam = "output_from_snakemake/aligned_just_risk/barcodes_{combination}.bam"
+  output:
+    csv = "output_from_snakemake/pileup/barcodes_{combination}.csv.gz"
+  threads: 8
+  params:
+    cluster =  "-J pileup --mem=32G -t 8:00:00 -o output_from_snakemake/slurm/pileup_{combination}.txt"
+  shell:
+    """
+    python3 ~/home/software/nano_tools/perform_enhanced_pileup.py -b {input.bam} -o {output.csv} --primary
+    """

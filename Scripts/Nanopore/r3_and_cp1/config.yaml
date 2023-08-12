@@ -1,0 +1,4 @@
+barcode_csv: /camp/home/wilkino/home/nanopore/REPRODUCIBLE_ANALYSIS_FOR_CRYPTIC_GATING_PAPER/scripts/r3_and_cp1/barcodes.csv
+fastq: /camp/home/wilkino/home/nanopore/REPRODUCIBLE_ANALYSIS_FOR_CRYPTIC_GATING_PAPER/data/r3_and_cp1/fastq/combined_fastq.fastq.gz
+gtf: /camp/home/wilkino/home/nanopore/REPRODUCIBLE_ANALYSIS_FOR_CRYPTIC_GATING_PAPER/scripts/r3_and_cp1/aars1_and_gluc_gtf.gtf
+fasta: /camp/home/wilkino/home/nanopore/REPRODUCIBLE_ANALYSIS_FOR_CRYPTIC_GATING_PAPER/data/fastas/r3_and_cp1/aars1_and_gluc_fasta.fa
