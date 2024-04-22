@@ -55,7 +55,7 @@ for new_directory in list(directories):
 
 ### RUN FROM Z:\home\users\wilkino\nanopore\REPRODUCIBLE_ANALYSIS_FOR_CRYPTIC_GATING_PAPER\output\triple_cryptic_cre\ ###
 #### conda activate nanopore_snakemake
-#### sbatch -N 1 -J snake --mem=8GB -t 24:00:00 --wrap="snakemake -s ~/home/nanopore/REPRODUCIBLE_ANALYSIS_FOR_CRYPTIC_GATING_PAPER/new_triple_cryptic_cre/snakemake.yaml -k --cluster 'sbatch {params.cluster}' --jobs 200 --configfile ~/home/nanopore/REPRODUCIBLE_ANALYSIS_FOR_CRYPTIC_GATING_PAPER/new_triple_cryptic_cre/config.yaml -np"
+#### sbatch -N 1 -J snake --mem=8GB -t 24:00:00 --wrap="snakemake -s ~/home/nanopore/REPRODUCIBLE_ANALYSIS_FOR_CRYPTIC_GATING_PAPER/new_triple_cryptic_cre/snakemake.yaml -k --cluster 'sbatch {params.cluster}' --jobs 200 --configfile ~/home/nanopore/REPRODUCIBLE_ANALYSIS_FOR_CRYPTIC_GATING_PAPER/new_triple_cryptic_cre/config.yaml"
 
 # First, use the barcode.csv to get a list of all the barcode combinations we will have
 
