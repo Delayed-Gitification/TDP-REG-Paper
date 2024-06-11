@@ -1,3 +1,0 @@
-barcode_csv: /camp/home/wilkino/home/nanopore/REPRODUCIBLE_ANALYSIS_FOR_CRYPTIC_GATING_PAPER/scripts/pemax/barcodes.csv
-fastq: /camp/home/wilkino/home/nanopore/REPRODUCIBLE_ANALYSIS_FOR_CRYPTIC_GATING_PAPER/data/pemax/fastq/combined.fastq.gz
-fasta: /camp/home/wilkino/home/nanopore/REPRODUCIBLE_ANALYSIS_FOR_CRYPTIC_GATING_PAPER/data/fastas/unc13a_stmn2_amplicons.fa
