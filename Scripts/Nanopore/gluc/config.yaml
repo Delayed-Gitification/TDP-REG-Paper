@@ -1,3 +1,0 @@
-barcode_csv: /camp/home/wilkino/home/nanopore/REPRODUCIBLE_ANALYSIS_FOR_CRYPTIC_GATING_PAPER/scripts/gluc/barcodes.csv
-fastq: /camp/home/wilkino/home/nanopore/REPRODUCIBLE_ANALYSIS_FOR_CRYPTIC_GATING_PAPER/data/gluc_splicing/fastq/combined.fastq.gz
-fasta: /camp/home/wilkino/home/nanopore/REPRODUCIBLE_ANALYSIS_FOR_CRYPTIC_GATING_PAPER/data/fastas/gluc_fasta.fa
